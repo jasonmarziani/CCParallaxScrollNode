@@ -1,5 +1,5 @@
 /****************************************************************************
- Copyright (c) 2010-2011 cocos2d-x.org
+ Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2008-2010 Ricardo Quesada
  Copyright (c) 2011 Zynga Inc.
  
@@ -25,11 +25,11 @@
  ****************************************************************************/
 
 #include "CCActionInstant.h"
-#include "CCNode.h"
-#include "CCSprite.h"
-#include "CCScriptSupport.h"
+#include "base_nodes/CCNode.h"
+#include "sprite_nodes/CCSprite.h"
+#include "cocoa/CCZone.h"
 
-namespace cocos2d {
+NS_CC_BEGIN
 //
 // InstantAction
 //
@@ -37,565 +37,566 @@ CCActionInstant::CCActionInstant() {
 }
 
 CCObject * CCActionInstant::copyWithZone(CCZone *pZone) {
-	CCZone *pNewZone = NULL;
-	CCActionInstant *pRet = NULL;
+    CCZone *pNewZone = NULL;
+    CCActionInstant *pRet = NULL;
 
-	if (pZone && pZone->m_pCopyObject) {
-		pRet = (CCActionInstant*) (pZone->m_pCopyObject);
-	} else {
-		pRet = new CCActionInstant();
-		pZone = pNewZone = new CCZone(pRet);
-	}
+    if (pZone && pZone->m_pCopyObject) {
+        pRet = (CCActionInstant*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCActionInstant();
+        pZone = pNewZone = new CCZone(pRet);
+    }
 
-	CCFiniteTimeAction::copyWithZone(pZone);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCFiniteTimeAction::copyWithZone(pZone);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 bool CCActionInstant::isDone() {
-	return true;
+    return true;
 }
 
-void CCActionInstant::step(ccTime dt) {
-	CC_UNUSED_PARAM(dt);
-	update(1);
+void CCActionInstant::step(float dt) {
+    CC_UNUSED_PARAM(dt);
+    update(1);
 }
 
-void CCActionInstant::update(ccTime time) {
-	CC_UNUSED_PARAM(time);
-	// ignore
+void CCActionInstant::update(float time) {
+    CC_UNUSED_PARAM(time);
+    // nothing
 }
 
 CCFiniteTimeAction * CCActionInstant::reverse() {
-	return (CCFiniteTimeAction*) (copy()->autorelease());
+    return (CCFiniteTimeAction*) (copy()->autorelease());
 }
 
 //
 // Show
 //
-CCShow* CCShow::action() {
-	CCShow* pRet = new CCShow();
-
-	if (pRet) {
-		pRet->autorelease();
-	}
-
-	return pRet;
+CCShow* CCShow::action() 
+{
+    return CCShow::create();
 }
 
-void CCShow::startWithTarget(CCNode *pTarget) {
-	CCActionInstant::startWithTarget(pTarget);
-	pTarget->setIsVisible(true);
+CCShow* CCShow::create() 
+{
+    CCShow* pRet = new CCShow();
+
+    if (pRet) {
+        pRet->autorelease();
+    }
+
+    return pRet;
+}
+
+void CCShow::update(float time) {
+    CC_UNUSED_PARAM(time);
+    m_pTarget->setVisible(true);
 }
 
 CCFiniteTimeAction* CCShow::reverse() {
-	return (CCFiniteTimeAction*) (CCHide::action());
+    return (CCFiniteTimeAction*) (CCHide::create());
 }
 
 CCObject* CCShow::copyWithZone(CCZone *pZone) {
 
-	CCZone *pNewZone = NULL;
-	CCShow *pRet = NULL;
-	if (pZone && pZone->m_pCopyObject) {
-		pRet = (CCShow*) (pZone->m_pCopyObject);
-	} else {
-		pRet = new CCShow();
-		pZone = pNewZone = new CCZone(pRet);
-	}
+    CCZone *pNewZone = NULL;
+    CCShow *pRet = NULL;
+    if (pZone && pZone->m_pCopyObject) {
+        pRet = (CCShow*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCShow();
+        pZone = pNewZone = new CCZone(pRet);
+    }
 
-	CCFiniteTimeAction::copyWithZone(pZone);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCActionInstant::copyWithZone(pZone);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 //
 // Hide
 //
-CCHide * CCHide::action() {
-	CCHide *pRet = new CCHide();
-
-	if (pRet) {
-		pRet->autorelease();
-	}
-
-	return pRet;
+CCHide * CCHide::action() 
+{
+    return CCHide::create();
 }
 
-void CCHide::startWithTarget(CCNode *pTarget) {
-	CCActionInstant::startWithTarget(pTarget);
-	pTarget->setIsVisible(false);
+CCHide * CCHide::create() 
+{
+    CCHide *pRet = new CCHide();
+
+    if (pRet) {
+        pRet->autorelease();
+    }
+
+    return pRet;
+}
+
+void CCHide::update(float time) {
+    CC_UNUSED_PARAM(time);
+    m_pTarget->setVisible(false);
 }
 
 CCFiniteTimeAction *CCHide::reverse() {
-	return (CCFiniteTimeAction*) (CCShow::action());
+    return (CCFiniteTimeAction*) (CCShow::create());
 }
 
 CCObject* CCHide::copyWithZone(CCZone *pZone) {
-	CCZone *pNewZone = NULL;
-	CCHide *pRet = NULL;
+    CCZone *pNewZone = NULL;
+    CCHide *pRet = NULL;
 
-	if (pZone && pZone->m_pCopyObject) {
-		pRet = (CCHide*) (pZone->m_pCopyObject);
-	} else {
-		pRet = new CCHide();
-		pZone = pNewZone = new CCZone(pRet);
-	}
+    if (pZone && pZone->m_pCopyObject) {
+        pRet = (CCHide*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCHide();
+        pZone = pNewZone = new CCZone(pRet);
+    }
 
-	CCFiniteTimeAction::copyWithZone(pZone);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCActionInstant::copyWithZone(pZone);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 //
 // ToggleVisibility
 //
-CCToggleVisibility * CCToggleVisibility::action() {
-	CCToggleVisibility *pRet = new CCToggleVisibility();
-
-	if (pRet) {
-		pRet->autorelease();
-	}
-
-	return pRet;
+CCToggleVisibility * CCToggleVisibility::action()
+{
+    return CCToggleVisibility::create();
 }
 
-void CCToggleVisibility::startWithTarget(CCNode *pTarget) {
-	CCActionInstant::startWithTarget(pTarget);
-	pTarget->setIsVisible(!pTarget->getIsVisible());
+CCToggleVisibility * CCToggleVisibility::create()
+{
+    CCToggleVisibility *pRet = new CCToggleVisibility();
+
+    if (pRet)
+    {
+        pRet->autorelease();
+    }
+
+    return pRet;
+}
+
+void CCToggleVisibility::update(float time) 
+{
+    CC_UNUSED_PARAM(time);
+    m_pTarget->setVisible(!m_pTarget->isVisible());
+}
+
+CCObject* CCToggleVisibility::copyWithZone(CCZone *pZone)
+{
+    CCZone *pNewZone = NULL;
+    CCToggleVisibility *pRet = NULL;
+
+    if (pZone && pZone->m_pCopyObject) {
+        pRet = (CCToggleVisibility*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCToggleVisibility();
+        pZone = pNewZone = new CCZone(pRet);
+    }
+
+    CCActionInstant::copyWithZone(pZone);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 //
 // FlipX
 //
-CCFlipX *CCFlipX::actionWithFlipX(bool x) {
-	CCFlipX *pRet = new CCFlipX();
+CCFlipX *CCFlipX::actionWithFlipX(bool x) 
+{
+    return CCFlipX::create(x);
+}
 
-	if (pRet && pRet->initWithFlipX(x)) {
-		pRet->autorelease();
-		return pRet;
-	}
+CCFlipX *CCFlipX::create(bool x)
+{
+    CCFlipX *pRet = new CCFlipX();
 
-	CC_SAFE_DELETE(pRet)
-	return NULL;
+    if (pRet && pRet->initWithFlipX(x)) {
+        pRet->autorelease();
+        return pRet;
+    }
+
+    CC_SAFE_DELETE(pRet);
+    return NULL;
 }
 
 bool CCFlipX::initWithFlipX(bool x) {
-	m_bFlipX = x;
-	return true;
+    m_bFlipX = x;
+    return true;
 }
 
-void CCFlipX::startWithTarget(CCNode *pTarget) {
-	CCActionInstant::startWithTarget(pTarget);
-	((CCSprite*) (pTarget))->setFlipX(m_bFlipX);
+void CCFlipX::update(float time) {
+    CC_UNUSED_PARAM(time);
+    ((CCSprite*) (m_pTarget))->setFlipX(m_bFlipX);
 }
 
 CCFiniteTimeAction* CCFlipX::reverse() {
-	return CCFlipX::actionWithFlipX(!m_bFlipX);
+    return CCFlipX::create(!m_bFlipX);
 }
 
 CCObject * CCFlipX::copyWithZone(CCZone *pZone) {
-	CCZone *pNewZone = NULL;
-	CCFlipX *pRet = NULL;
+    CCZone *pNewZone = NULL;
+    CCFlipX *pRet = NULL;
 
-	if (pZone && pZone->m_pCopyObject) {
-		pRet = (CCFlipX*) (pZone->m_pCopyObject);
-	} else {
-		pRet = new CCFlipX();
-		pZone = pNewZone = new CCZone(pRet);
-	}
+    if (pZone && pZone->m_pCopyObject) {
+        pRet = (CCFlipX*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCFlipX();
+        pZone = pNewZone = new CCZone(pRet);
+    }
 
-	CCActionInstant::copyWithZone(pZone);
-	pRet->initWithFlipX(m_bFlipX);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCActionInstant::copyWithZone(pZone);
+    pRet->initWithFlipX(m_bFlipX);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 //
 // FlipY
 //
-CCFlipY * CCFlipY::actionWithFlipY(bool y) {
-	CCFlipY *pRet = new CCFlipY();
+CCFlipY * CCFlipY::actionWithFlipY(bool y)
+{
+    return CCFlipY::create(y);
+}
 
-	if (pRet && pRet->initWithFlipY(y)) {
-		pRet->autorelease();
-		return pRet;
-	}
+CCFlipY * CCFlipY::create(bool y)
+{
+    CCFlipY *pRet = new CCFlipY();
 
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+    if (pRet && pRet->initWithFlipY(y)) {
+        pRet->autorelease();
+        return pRet;
+    }
+
+    CC_SAFE_DELETE(pRet);
+    return NULL;
 }
 
 bool CCFlipY::initWithFlipY(bool y) {
-	m_bFlipY = y;
-	return true;
+    m_bFlipY = y;
+    return true;
 }
 
-void CCFlipY::startWithTarget(CCNode *pTarget) {
-	CCActionInstant::startWithTarget(pTarget);
-	((CCSprite*) (pTarget))->setFlipY(m_bFlipY);
+void CCFlipY::update(float time) {
+    CC_UNUSED_PARAM(time);
+    ((CCSprite*) (m_pTarget))->setFlipY(m_bFlipY);
 }
 
 CCFiniteTimeAction* CCFlipY::reverse() {
-	return CCFlipY::actionWithFlipY(!m_bFlipY);
+    return CCFlipY::create(!m_bFlipY);
 }
 
 CCObject* CCFlipY::copyWithZone(CCZone *pZone) {
-	CCZone *pNewZone = NULL;
-	CCFlipY *pRet = NULL;
+    CCZone *pNewZone = NULL;
+    CCFlipY *pRet = NULL;
 
-	if (pZone && pZone->m_pCopyObject) {
-		pRet = (CCFlipY*) (pZone->m_pCopyObject);
-	} else {
-		pRet = new CCFlipY();
-		pZone = pNewZone = new CCZone(pRet);
-	}
+    if (pZone && pZone->m_pCopyObject) {
+        pRet = (CCFlipY*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCFlipY();
+        pZone = pNewZone = new CCZone(pRet);
+    }
 
-	CCActionInstant::copyWithZone(pZone);
-	pRet->initWithFlipY(m_bFlipY);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCActionInstant::copyWithZone(pZone);
+    pRet->initWithFlipY(m_bFlipY);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 //
 // Place
 //
-CCPlace* CCPlace::actionWithPosition(const CCPoint& pos) {
-	CCPlace *pRet = new CCPlace();
+CCPlace* CCPlace::actionWithPosition(const CCPoint& pos)
+{
+    return CCPlace::create(pos);
+}
 
-	if (pRet && pRet->initWithPosition(pos)) {
-		pRet->autorelease();
-		return pRet;
-	}
+CCPlace* CCPlace::create(const CCPoint& pos)
+{
+    CCPlace *pRet = new CCPlace();
 
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+    if (pRet && pRet->initWithPosition(pos)) {
+        pRet->autorelease();
+        return pRet;
+    }
+
+    CC_SAFE_DELETE(pRet);
+    return NULL;
 }
 
 bool CCPlace::initWithPosition(const CCPoint& pos) {
-	m_tPosition = pos;
-	return true;
+    m_tPosition = pos;
+    return true;
 }
 
 CCObject * CCPlace::copyWithZone(CCZone *pZone) {
-	CCZone *pNewZone = NULL;
-	CCPlace *pRet = NULL;
+    CCZone *pNewZone = NULL;
+    CCPlace *pRet = NULL;
 
-	if (pZone && pZone->m_pCopyObject) {
-		pRet = (CCPlace*) (pZone->m_pCopyObject);
-	} else {
-		pRet = new CCPlace();
-		pZone = pNewZone = new CCZone(pRet);
-	}
+    if (pZone && pZone->m_pCopyObject) {
+        pRet = (CCPlace*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCPlace();
+        pZone = pNewZone = new CCZone(pRet);
+    }
 
-	CCActionInstant::copyWithZone(pZone);
-	pRet->initWithPosition(m_tPosition);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCActionInstant::copyWithZone(pZone);
+    pRet->initWithPosition(m_tPosition);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
-void CCPlace::startWithTarget(CCNode *pTarget) {
-	CCActionInstant::startWithTarget(pTarget);
-	m_pTarget->setPosition(m_tPosition);
+void CCPlace::update(float time) {
+    CC_UNUSED_PARAM(time);
+    m_pTarget->setPosition(m_tPosition);
 }
 
 //
 // CallFunc
 //
 
-CCCallFunc * CCCallFunc::actionWithTarget(SelectorProtocol* pSelectorTarget,
-		SEL_CallFunc selector) {
-	CCCallFunc *pRet = new CCCallFunc();
-
-	if (pRet && pRet->initWithTarget(pSelectorTarget)) {
-		pRet->m_pCallFunc = selector;
-		pRet->autorelease();
-		return pRet;
-	}
-
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+CCCallFunc * CCCallFunc::actionWithTarget(CCObject* pSelectorTarget, SEL_CallFunc selector) 
+{
+    return CCCallFunc::create(pSelectorTarget, selector);
 }
 
-CCCallFunc* CCCallFunc::actionWithScriptFuncName(const char* pszFuncName) {
-	CCCallFunc *pRet = new CCCallFunc();
+CCCallFunc * CCCallFunc::create(CCObject* pSelectorTarget, SEL_CallFunc selector) 
+{
+    CCCallFunc *pRet = new CCCallFunc();
 
-	if (pRet && pRet->initWithScriptFuncName(pszFuncName)) {
-		pRet->autorelease();
-		return pRet;
-	}
+    if (pRet && pRet->initWithTarget(pSelectorTarget)) {
+        pRet->m_pCallFunc = selector;
+        pRet->autorelease();
+        return pRet;
+    }
 
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+    CC_SAFE_DELETE(pRet);
+    return NULL;
 }
 
-bool CCCallFunc::initWithScriptFuncName(const char *pszFuncName) {
-	this->m_scriptFuncName = string(pszFuncName);
-	return true;
-}
+bool CCCallFunc::initWithTarget(CCObject* pSelectorTarget) {
+    if (pSelectorTarget) 
+    {
+        pSelectorTarget->retain();
+    }
 
-bool CCCallFunc::initWithTarget(SelectorProtocol* pSelectorTarget) {
-	if (pSelectorTarget) 
-	{
-		dynamic_cast<CCObject*>(pSelectorTarget)->retain();
-	}
+    if (m_pSelectorTarget) 
+    {
+        m_pSelectorTarget->release();
+    }
 
-	if (m_pSelectorTarget) 
-	{
-		dynamic_cast<CCObject*>(m_pSelectorTarget)->release();
-	}
-
-	m_pSelectorTarget = pSelectorTarget;
-	return true;
+    m_pSelectorTarget = pSelectorTarget;
+    return true;
 }
 
 CCObject * CCCallFunc::copyWithZone(CCZone *pZone) {
-	CCZone* pNewZone = NULL;
-	CCCallFunc* pRet = NULL;
+    CCZone* pNewZone = NULL;
+    CCCallFunc* pRet = NULL;
 
-	if (pZone && pZone->m_pCopyObject) {
-		//in case of being called at sub class
-		pRet = (CCCallFunc*) (pZone->m_pCopyObject);
-	} else {
-		pRet = new CCCallFunc();
-		pZone = pNewZone = new CCZone(pRet);
-	}
+    if (pZone && pZone->m_pCopyObject) {
+        //in case of being called at sub class
+        pRet = (CCCallFunc*) (pZone->m_pCopyObject);
+    } else {
+        pRet = new CCCallFunc();
+        pZone = pNewZone = new CCZone(pRet);
+    }
 
-	CCActionInstant::copyWithZone(pZone);
-	pRet->initWithTarget(m_pSelectorTarget);
-	pRet->m_pCallFunc = m_pCallFunc;
-	pRet->m_scriptFuncName = m_scriptFuncName;
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCActionInstant::copyWithZone(pZone);
+    pRet->initWithTarget(m_pSelectorTarget);
+    pRet->m_pCallFunc = m_pCallFunc;
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
-void CCCallFunc::startWithTarget(CCNode *pTarget) {
-	CCActionInstant::startWithTarget(pTarget);
-	this->execute();
+void CCCallFunc::update(float time) {
+    CC_UNUSED_PARAM(time);
+    this->execute();
 }
 
 void CCCallFunc::execute() {
-	if (m_pCallFunc) {
-		(m_pSelectorTarget->*m_pCallFunc)();
-	}
-
-	if (CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()) {
-		CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()->executeCallFunc(
-				m_scriptFuncName.c_str());
-	}
+    if (m_pCallFunc) {
+        (m_pSelectorTarget->*m_pCallFunc)();
+    }
 }
 
 //
 // CallFuncN
 //
 void CCCallFuncN::execute() {
-	if (m_pCallFuncN) {
-		(m_pSelectorTarget->*m_pCallFuncN)(m_pTarget);
-	}
-
-	if (CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()) {
-		CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()->executeCallFuncN(
-				m_scriptFuncName.c_str(), m_pTarget);
-	}
+    if (m_pCallFuncN) {
+        (m_pSelectorTarget->*m_pCallFuncN)(m_pTarget);
+    }
 }
 
-CCCallFuncN * CCCallFuncN::actionWithTarget(SelectorProtocol* pSelectorTarget,
-		SEL_CallFuncN selector) {
-	CCCallFuncN *pRet = new CCCallFuncN();
-
-	if (pRet && pRet->initWithTarget(pSelectorTarget, selector)) {
-		pRet->autorelease();
-		return pRet;
-	}
-
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+CCCallFuncN * CCCallFuncN::actionWithTarget(CCObject* pSelectorTarget, SEL_CallFuncN selector)
+{
+    return CCCallFuncN::create(pSelectorTarget, selector);
 }
 
-CCCallFuncN* CCCallFuncN::actionWithScriptFuncName(const char *pszFuncName) {
-	CCCallFuncN *pRet = new CCCallFuncN();
+CCCallFuncN * CCCallFuncN::create(CCObject* pSelectorTarget, SEL_CallFuncN selector)
+{
+    CCCallFuncN *pRet = new CCCallFuncN();
 
-	if (pRet && pRet->initWithScriptFuncName(pszFuncName)) {
-		pRet->autorelease();
-		return pRet;
-	}
+    if (pRet && pRet->initWithTarget(pSelectorTarget, selector))
+    {
+        pRet->autorelease();
+        return pRet;
+    }
 
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+    CC_SAFE_DELETE(pRet);
+    return NULL;
 }
 
-bool CCCallFuncN::initWithTarget(SelectorProtocol* pSelectorTarget,
-		SEL_CallFuncN selector) {
-	if (CCCallFunc::initWithTarget(pSelectorTarget)) {
-		m_pCallFuncN = selector;
-		return true;
-	}
+bool CCCallFuncN::initWithTarget(CCObject* pSelectorTarget,
+        SEL_CallFuncN selector) {
+    if (CCCallFunc::initWithTarget(pSelectorTarget)) {
+        m_pCallFuncN = selector;
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 CCObject * CCCallFuncN::copyWithZone(CCZone* zone) {
-	CCZone* pNewZone = NULL;
-	CCCallFuncN* pRet = NULL;
+    CCZone* pNewZone = NULL;
+    CCCallFuncN* pRet = NULL;
 
-	if (zone && zone->m_pCopyObject) {
-		//in case of being called at sub class
-		pRet = (CCCallFuncN*) (zone->m_pCopyObject);
-	} else {
-		pRet = new CCCallFuncN();
-		zone = pNewZone = new CCZone(pRet);
-	}
+    if (zone && zone->m_pCopyObject) {
+        //in case of being called at sub class
+        pRet = (CCCallFuncN*) (zone->m_pCopyObject);
+    } else {
+        pRet = new CCCallFuncN();
+        zone = pNewZone = new CCZone(pRet);
+    }
 
-	CCCallFunc::copyWithZone(zone);
-	pRet->initWithTarget(m_pSelectorTarget, m_pCallFuncN);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCCallFunc::copyWithZone(zone);
+    pRet->initWithTarget(m_pSelectorTarget, m_pCallFuncN);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 //
 // CallFuncND
 //
-CCCallFuncND * CCCallFuncND::actionWithTarget(SelectorProtocol* pSelectorTarget,
-		SEL_CallFuncND selector, void* d) {
-	CCCallFuncND* pRet = new CCCallFuncND();
-
-	if (pRet && pRet->initWithTarget(pSelectorTarget, selector, d)) {
-		pRet->autorelease();
-		return pRet;
-	}
-
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+CCCallFuncND * CCCallFuncND::actionWithTarget(CCObject* pSelectorTarget, SEL_CallFuncND selector, void* d) 
+{
+    return CCCallFuncND::create(pSelectorTarget, selector, d);
 }
 
-CCCallFuncND* CCCallFuncND::actionWithScriptFuncName(const char* pszFuncName,
-		void *d) {
-	CCCallFuncND* pRet = new CCCallFuncND();
+CCCallFuncND * CCCallFuncND::create(CCObject* pSelectorTarget, SEL_CallFuncND selector, void* d)
+{
+    CCCallFuncND* pRet = new CCCallFuncND();
 
-	if (pRet && pRet->initWithScriptFuncName(pszFuncName)) {
-		pRet->autorelease();
-		pRet->m_pData = d;
-		return pRet;
-	}
+    if (pRet && pRet->initWithTarget(pSelectorTarget, selector, d)) {
+        pRet->autorelease();
+        return pRet;
+    }
 
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+    CC_SAFE_DELETE(pRet);
+    return NULL;
 }
 
-bool CCCallFuncND::initWithTarget(SelectorProtocol* pSelectorTarget,
-		SEL_CallFuncND selector, void* d) {
-	if (CCCallFunc::initWithTarget(pSelectorTarget)) {
-		m_pData = d;
-		m_pCallFuncND = selector;
-		return true;
-	}
+bool CCCallFuncND::initWithTarget(CCObject* pSelectorTarget,
+        SEL_CallFuncND selector, void* d) {
+    if (CCCallFunc::initWithTarget(pSelectorTarget)) {
+        m_pData = d;
+        m_pCallFuncND = selector;
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 CCObject * CCCallFuncND::copyWithZone(CCZone* zone) {
-	CCZone* pNewZone = NULL;
-	CCCallFuncND* pRet = NULL;
+    CCZone* pNewZone = NULL;
+    CCCallFuncND* pRet = NULL;
 
-	if (zone && zone->m_pCopyObject) {
-		//in case of being called at sub class
-		pRet = (CCCallFuncND*) (zone->m_pCopyObject);
-	} else {
-		pRet = new CCCallFuncND();
-		zone = pNewZone = new CCZone(pRet);
-	}
+    if (zone && zone->m_pCopyObject) {
+        //in case of being called at sub class
+        pRet = (CCCallFuncND*) (zone->m_pCopyObject);
+    } else {
+        pRet = new CCCallFuncND();
+        zone = pNewZone = new CCZone(pRet);
+    }
 
-	CCCallFunc::copyWithZone(zone);
-	pRet->initWithTarget(m_pSelectorTarget, m_pCallFuncND, m_pData);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCCallFunc::copyWithZone(zone);
+    pRet->initWithTarget(m_pSelectorTarget, m_pCallFuncND, m_pData);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
 
 void CCCallFuncND::execute() {
-	if (m_pCallFuncND) {
-		(m_pSelectorTarget->*m_pCallFuncND)(m_pTarget, m_pData);
-	}
-
-	if (CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()) {
-		CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()->executeCallFuncND(
-				m_scriptFuncName.c_str(), m_pTarget, m_pData);
-	}
+    if (m_pCallFuncND) {
+        (m_pSelectorTarget->*m_pCallFuncND)(m_pTarget, m_pData);
+    }
 }
 
 //
 // CCCallFuncO
 //
 CCCallFuncO::CCCallFuncO() :
-		m_pObject(NULL) {
+        m_pObject(NULL) {
 }
 
 CCCallFuncO::~CCCallFuncO() {
-	CC_SAFE_RELEASE(m_pObject);
+    CC_SAFE_RELEASE(m_pObject);
 }
 
 void CCCallFuncO::execute() {
-	if (m_pCallFuncO) {
-		(m_pSelectorTarget->*m_pCallFuncO)(m_pObject);
-	}
-
-	if (CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()) {
-		CCScriptEngineManager::sharedScriptEngineManager()->getScriptEngine()->executeCallFunc0(
-				m_scriptFuncName.c_str(), m_pObject);
-	}
+    if (m_pCallFuncO) {
+        (m_pSelectorTarget->*m_pCallFuncO)(m_pObject);
+    }
 }
 
-CCCallFuncO * CCCallFuncO::actionWithTarget(SelectorProtocol* pSelectorTarget,
-		SEL_CallFuncO selector, CCObject* pObject) {
-	CCCallFuncO *pRet = new CCCallFuncO();
-
-	if (pRet && pRet->initWithTarget(pSelectorTarget, selector, pObject)) {
-		pRet->autorelease();
-		return pRet;
-	}
-
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+CCCallFuncO * CCCallFuncO::actionWithTarget(CCObject* pSelectorTarget, SEL_CallFuncO selector, CCObject* pObject)
+{
+    return CCCallFuncO::create(pSelectorTarget, selector, pObject);
 }
 
-CCCallFuncO* CCCallFuncO::actionWithScriptFuncName(const char *pszFuncName) {
-	CCCallFuncO *pRet = new CCCallFuncO();
+CCCallFuncO * CCCallFuncO::create(CCObject* pSelectorTarget, SEL_CallFuncO selector, CCObject* pObject)
+{
+    CCCallFuncO *pRet = new CCCallFuncO();
 
-	if (pRet && pRet->initWithScriptFuncName(pszFuncName)) {
-		pRet->autorelease();
-		return pRet;
-	}
+    if (pRet && pRet->initWithTarget(pSelectorTarget, selector, pObject)) {
+        pRet->autorelease();
+        return pRet;
+    }
 
-	CC_SAFE_DELETE(pRet);
-	return NULL;
+    CC_SAFE_DELETE(pRet);
+    return NULL;
 }
 
-bool CCCallFuncO::initWithTarget(SelectorProtocol* pSelectorTarget,
-		SEL_CallFuncO selector, CCObject* pObject) {
-	if (CCCallFunc::initWithTarget(pSelectorTarget)) {
-		m_pObject = pObject;
-		CC_SAFE_RETAIN(m_pObject)
+bool CCCallFuncO::initWithTarget(CCObject* pSelectorTarget,
+        SEL_CallFuncO selector, CCObject* pObject) {
+    if (CCCallFunc::initWithTarget(pSelectorTarget)) {
+        m_pObject = pObject;
+        CC_SAFE_RETAIN(m_pObject);
 
-		m_pCallFuncO = selector;
-		return true;
-	}
+        m_pCallFuncO = selector;
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 CCObject * CCCallFuncO::copyWithZone(CCZone* zone) {
-	CCZone* pNewZone = NULL;
-	CCCallFuncO* pRet = NULL;
+    CCZone* pNewZone = NULL;
+    CCCallFuncO* pRet = NULL;
 
-	if (zone && zone->m_pCopyObject) {
-		//in case of being called at sub class
-		pRet = (CCCallFuncO*) (zone->m_pCopyObject);
-	} else {
-		pRet = new CCCallFuncO();
-		zone = pNewZone = new CCZone(pRet);
-	}
+    if (zone && zone->m_pCopyObject) {
+        //in case of being called at sub class
+        pRet = (CCCallFuncO*) (zone->m_pCopyObject);
+    } else {
+        pRet = new CCCallFuncO();
+        zone = pNewZone = new CCZone(pRet);
+    }
 
-	CCCallFunc::copyWithZone(zone);
-	pRet->initWithTarget(m_pSelectorTarget, m_pCallFuncO, m_pObject);
-	CC_SAFE_DELETE(pNewZone);
-	return pRet;
+    CCCallFunc::copyWithZone(zone);
+    pRet->initWithTarget(m_pSelectorTarget, m_pCallFuncO, m_pObject);
+    CC_SAFE_DELETE(pNewZone);
+    return pRet;
 }
-}
+
+NS_CC_END

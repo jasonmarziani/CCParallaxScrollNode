@@ -20,7 +20,8 @@ bool CCParallaxScrollNode::init()
 {
 	if ( !CCLayer::init() ) return false;
     
-    _scrollOffsets = new CCMutableArray<CCParallaxScrollOffset *>();
+    _scrollOffsets = CCArray::create();
+    _scrollOffsets->retain();
     CCSize screen = CCDirector::sharedDirector()->getWinSize();
     _range = CCSizeMake(screen.width, screen.height);
     this->setAnchorPoint(ccp(0,0));
@@ -28,15 +29,22 @@ bool CCParallaxScrollNode::init()
     return true;
 }
 
+CCParallaxScrollNode::~CCParallaxScrollNode()
+{
+    if (_scrollOffsets) {
+        _scrollOffsets->release();
+    }
+}
+
 // Used with box2d style velocity (m/s where m = 32 pixels), but box2d is not required
-void CCParallaxScrollNode::updateWithVelocity(CCPoint vel, ccTime dt)
+void CCParallaxScrollNode::updateWithVelocity(CCPoint vel, float dt)
 {
 	vel = ccpMult(vel, PTM_RATIO);
-	CCLog("count: %i", _scrollOffsets->count());
-    CCMutableArray<CCParallaxScrollOffset *>::CCMutableArrayIterator it;
-    for (it = _scrollOffsets->begin(); it != _scrollOffsets->end(); it++)
+//	CCLog("count: %i", _scrollOffsets->count());
+    CCObject* object;
+    CCARRAY_FOREACH(_scrollOffsets, object)
     {
-        CCParallaxScrollOffset *scrollOffset = (CCParallaxScrollOffset*)*it;
+        CCParallaxScrollOffset* scrollOffset = dynamic_cast<CCParallaxScrollOffset*>(object); 
 		CCPoint relVel = ccpMult(scrollOffset->getRelVelocity(), PTM_RATIO);
 		CCPoint totalVel = ccpAdd(vel, relVel);
 		CCPoint offset = ccpCompMult(ccpMult(totalVel, dt), scrollOffset->getRatio());
@@ -58,12 +66,13 @@ void CCParallaxScrollNode::updateWithVelocity(CCPoint vel, ccTime dt)
 }
 
 
-void CCParallaxScrollNode::updateWithYPosition(float y, ccTime dt)
+void CCParallaxScrollNode::updateWithYPosition(float y, float dt)
 {	
-	CCMutableArray<CCParallaxScrollOffset *>::CCMutableArrayIterator it;
-    for (it = _scrollOffsets->begin(); it != _scrollOffsets->end(); it++)
+    
+    CCObject* object;
+    CCARRAY_FOREACH(_scrollOffsets, object)
     {
-        CCParallaxScrollOffset *scrollOffset = (CCParallaxScrollOffset*)*it;
+        CCParallaxScrollOffset* scrollOffset = dynamic_cast<CCParallaxScrollOffset*>(object); 
 		CCNode *child = scrollOffset->getTheChild();
 		float offset = y * scrollOffset->getRatio().y;
 		child->setPosition(ccp(child->getPosition().x, scrollOffset->getOrigPosition().y + offset));
@@ -86,13 +95,14 @@ void CCParallaxScrollNode::addChild(CCSprite *node, int z, CCPoint r, CCPoint p,
 
 void CCParallaxScrollNode::removeChild(CCSprite *node, bool cleanup)
 {
-    CCMutableArray<CCParallaxScrollOffset *> *dealloc = new CCMutableArray<CCParallaxScrollOffset *>();
+    CCArray *dealloc = new CCArray();
     dealloc->autorelease();
     
-	CCMutableArray<CCParallaxScrollOffset *>::CCMutableArrayIterator it;
-    for (it = _scrollOffsets->begin(); it != _scrollOffsets->end(); it++)
+    
+    CCObject* object;
+    CCARRAY_FOREACH(_scrollOffsets, object)
     {
-        CCParallaxScrollOffset *scrollOffset = (CCParallaxScrollOffset*)*it;
+        CCParallaxScrollOffset* scrollOffset = dynamic_cast<CCParallaxScrollOffset*>(object); 
 		if( scrollOffset->getTheChild() == node){
 			dealloc->addObject(scrollOffset);
 			break;
@@ -101,7 +111,7 @@ void CCParallaxScrollNode::removeChild(CCSprite *node, bool cleanup)
     _scrollOffsets->removeObjectsInArray(dealloc);
 }
 
-void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCMutableArray<CCSprite*> *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel, CCPoint padding)
+void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel, CCPoint padding)
 {
 	// NOTE: corrects for 1 pixel at end of each sprite to avoid thin lines appearing
 	
@@ -109,31 +119,32 @@ void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCMutableArray<CCSprite*
 	float totalWidth = 0;
 	float totalHeight = 0;
     
-	CCMutableArray<CCSprite *>::CCMutableArrayIterator it;
-    for (it = objects->begin(); it != objects->end(); it++)
+    
+    CCObject* object;
+    CCARRAY_FOREACH(objects, object)
     {
-        CCSprite *object = (CCSprite*)*it;
-		totalWidth += object->getContentSize().width + dir.x * padding.x;
-		totalHeight += object->getContentSize().height + dir.y * padding.y;
+        CCSprite* sprite = dynamic_cast<CCSprite*>(object);
+		totalWidth += sprite->getContentSize().width + dir.x * padding.x;
+		totalHeight += sprite->getContentSize().height + dir.y * padding.y;
 	}
     
 	// Position objects, add to parallax
 	CCPoint currPos = pos;
-	for (it = objects->begin(); it != objects->end(); it++)
+    CCARRAY_FOREACH(objects, object)
     {
-		CCSprite *object = (CCSprite*)*it;
-		this->addChild(object, z, ratio, currPos, ccp(totalWidth, totalHeight), relVel);
-		CCPoint nextPosOffset = ccp(dir.x * (object->getContentSize().width + padding.x), dir.y * (object->getContentSize().height + padding.y));
+        CCSprite* sprite = dynamic_cast<CCSprite*>(object);
+		this->addChild(sprite, z, ratio, currPos, ccp(totalWidth, totalHeight), relVel);
+		CCPoint nextPosOffset = ccp(dir.x * (sprite->getContentSize().width + padding.x), dir.y * (sprite->getContentSize().height + padding.y));
 		currPos = ccpAdd(currPos, nextPosOffset);
 	}
 }
 
-void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCMutableArray<CCSprite*> *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel)
+void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel)
 {
 	this->addInfiniteScrollWithObjects(objects, z, ratio, pos, dir, relVel, ccp(-1,-1));
 }
 
-void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCMutableArray<CCSprite*> *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir)
+void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir)
 {
 	this->addInfiniteScrollWithObjects(objects, z, ratio, pos, dir, ccp(0,0));
 }
@@ -142,7 +153,7 @@ void CCParallaxScrollNode::addInfiniteScrollXWithZ(int z, CCPoint ratio, CCPoint
 	va_list args;
     va_start(args, firstObject);
 	
-	CCMutableArray<CCSprite*>* argArray = new CCMutableArray<CCSprite*>();
+	CCArray* argArray = new CCArray();
 	for (CCSprite *arg = firstObject; arg != NULL; arg = va_arg(args, CCSprite*)) {
 		argArray->addObject(arg);
 	}

@@ -25,11 +25,13 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include "cocos2d.h"
-namespace   cocos2d {
+
+NS_CC_BEGIN
 
 const char* cocos2dVersion()
 {
-	return "cocos2d-1.0.1-x-0.11.0";
+    return "cocos2d-2.0-rc2-x-2.0.1";
 }
 
-}//namespace   cocos2d 
+NS_CC_END
+

@@ -29,290 +29,395 @@ THE SOFTWARE.
 #include "ccMacros.h"
 #include "CCGL.h"
 #include "CCDirector.h"
-
+#include "shaders/ccGLStateCache.h"
+#include "shaders/CCShaderCache.h"
+#include "shaders/CCGLProgram.h"
+#include "actions/CCActionCatmullRom.h"
+#include "support/CCPointExtension.h"
 #include <string.h>
 #include <cmath>
 
+NS_CC_BEGIN
 #ifndef M_PI
-	#define M_PI       3.14159265358979323846
+    #define M_PI       3.14159265358979323846
 #endif
 
-namespace   cocos2d {
+static bool s_bInitialized = false;
+static CCGLProgram* s_pShader = NULL;
+static int s_nColorLocation = -1;
+static ccColor4F s_tColor = {1.0f,1.0f,1.0f,1.0f};
+static int s_nPointSizeLocation = -1;
+static GLfloat s_fPointSize = 1.0f;
 
-void ccDrawPoint(const CCPoint& point)
+static void lazy_init( void )
 {
-	ccVertex2F p = {point.x * CC_CONTENT_SCALE_FACTOR(), point.y * CC_CONTENT_SCALE_FACTOR() };
-	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-	// Needed states: GL_VERTEX_ARRAY, 
-	// Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	
-	glVertexPointer(2, GL_FLOAT, 0, &p);	
-	glDrawArrays(GL_POINTS, 0, 1);
+    if( ! s_bInitialized ) {
 
-	// restore default state
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnable(GL_TEXTURE_2D);	
-}
+        //
+        // Position and 1 color passed as a uniform (to similate glColor4ub )
+        //
+        s_pShader = CCShaderCache::sharedShaderCache()->programForKey(kCCShader_Position_uColor);
 
-void ccDrawPoints(const CCPoint *points, unsigned int numberOfPoints)
-{
-	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-	// Needed states: GL_VERTEX_ARRAY, 
-	// Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+        s_nColorLocation = glGetUniformLocation( s_pShader->getProgram(), "u_color");
+    CHECK_GL_ERROR_DEBUG();
+        s_nPointSizeLocation = glGetUniformLocation( s_pShader->getProgram(), "u_pointSize");
+    CHECK_GL_ERROR_DEBUG();
 
-	ccVertex2F *newPoints = new ccVertex2F[numberOfPoints];
-
-	// iPhone and 32-bit machines optimization
-	if( sizeof(CCPoint) == sizeof(ccVertex2F) ) 
-	{
-		// points ?
-		if( CC_CONTENT_SCALE_FACTOR() != 1 ) 
-		{
-			for( unsigned int i= 0; i < numberOfPoints; i++)
-			{
-				newPoints[i].x = points[i].x * CC_CONTENT_SCALE_FACTOR();
-				newPoints[i].y = points[i].y * CC_CONTENT_SCALE_FACTOR();
-			}
-
-			glVertexPointer(2, GL_FLOAT, 0, newPoints);
-
-		} else
-		{
-			glVertexPointer(2, GL_FLOAT, 0, points);
-		}
-
-		glDrawArrays(GL_POINTS, 0, (GLsizei)numberOfPoints);
-
-	} else 
-	{
-
-		// Mac on 64-bit
-		for( unsigned int i = 0; i < numberOfPoints; i++)
-		{
-			newPoints[i].x = points[i].x;
-			newPoints[i].y = points[i].y;
-		}
-
-		glVertexPointer(2, GL_FLOAT, 0, newPoints);
-		glDrawArrays(GL_POINTS, 0, (GLsizei)numberOfPoints);
-	}
-
-	delete[] newPoints;
-	
-	// restore default state
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnable(GL_TEXTURE_2D);	
-}
-
-void ccDrawLine(const CCPoint& origin, const CCPoint& destination)
-{
-	ccVertex2F vertices[2] = 
-    {
-        {origin.x * CC_CONTENT_SCALE_FACTOR(), origin.y * CC_CONTENT_SCALE_FACTOR()},
-        {destination.x * CC_CONTENT_SCALE_FACTOR(), destination.y * CC_CONTENT_SCALE_FACTOR()},
-    };
-	
-	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-	// Needed states: GL_VERTEX_ARRAY, 
-	// Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	
-	glVertexPointer(2, GL_FLOAT, 0, vertices);	
-	glDrawArrays(GL_LINES, 0, 2);
-	
-	// restore default state
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnable(GL_TEXTURE_2D);	
-}
-
-void ccDrawPoly(const CCPoint *poli, int numberOfPoints, bool closePolygon){
-	ccDrawPoly(poli,numberOfPoints,closePolygon,false);
-}
-void ccDrawPoly(const CCPoint *poli, int numberOfPoints, bool closePolygon, bool fill)
-{
-    ccVertex2F* newPoint = new ccVertex2F[numberOfPoints];
-    if (! newPoint)
-    {
-        return;
+        s_bInitialized = true;
     }
-    // Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-    // Needed states: GL_VERTEX_ARRAY, 
-    // Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY	
-    glDisable(GL_TEXTURE_2D);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_COLOR_ARRAY);
+}
 
+// When back to foreground on android, we want to it to inilialize again
+void ccDrawInit()
+{
+    s_bInitialized = false;
+}
 
-    // iPhone and 32-bit machines
-    if( sizeof(CCPoint) == sizeof(ccVertex2F) ) 
-	{
-        // convert to pixels ?
-        if( CC_CONTENT_SCALE_FACTOR() != 1 ) 
-		{
-            memcpy( newPoint, poli, numberOfPoints * sizeof(ccVertex2F) );
-            for( int i=0; i<numberOfPoints;i++)
-            {
-                newPoint[i].x = poli[i].x * CC_CONTENT_SCALE_FACTOR();
-                newPoint[i].y = poli[i].y * CC_CONTENT_SCALE_FACTOR();
-            }
-            glVertexPointer(2, GL_FLOAT, 0, newPoint);
+void ccDrawPoint( const CCPoint& point )
+{
+    lazy_init();
 
-        } 
-		else
-		{
-            glVertexPointer(2, GL_FLOAT, 0, poli);
-		}
+    ccVertex2F p;
+    p.x = point.x;
+    p.y = point.y;
 
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();
 
-    } 
-	else 
-	{
-        // 64-bit machines (Mac)
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &s_tColor.r, 1);
+    s_pShader->setUniformLocationWith1f(s_nPointSizeLocation, s_fPointSize);
 
-        for( int i=0; i<numberOfPoints;i++)
-        {
-            newPoint[i].x = poli[i].x;
-            newPoint[i].y = poli[i].y;
+    glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, &p);
+
+    glDrawArrays(GL_POINTS, 0, 1);
+
+    CC_INCREMENT_GL_DRAWS(1);
+}
+
+void ccDrawPoints( const CCPoint *points, unsigned int numberOfPoints )
+{
+    lazy_init();
+
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &s_tColor.r, 1);
+    s_pShader->setUniformLocationWith1f(s_nPointSizeLocation, s_fPointSize);
+
+    // XXX: Mac OpenGL error. arrays can't go out of scope before draw is executed
+    ccVertex2F* newPoints = new ccVertex2F[numberOfPoints];
+
+    // iPhone and 32-bit machines optimization
+    if( sizeof(CCPoint) == sizeof(ccVertex2F) )
+    {
+        glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, points);
+    }
+    else
+    {
+        // Mac on 64-bit
+        for( unsigned int i=0; i<numberOfPoints;i++) {
+            newPoints[i].x = points[i].x;
+            newPoints[i].y = points[i].y;
         }
+        glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, newPoints);
+    }
 
-        glVertexPointer(2, GL_FLOAT, 0, newPoint );
+    glDrawArrays(GL_POINTS, 0, (GLsizei) numberOfPoints);
 
+    CC_SAFE_DELETE_ARRAY(newPoints);
+
+    CC_INCREMENT_GL_DRAWS(1);
+}
+
+
+void ccDrawLine( const CCPoint& origin, const CCPoint& destination )
+{
+    lazy_init();
+
+    ccVertex2F vertices[2] = {
+        {origin.x, origin.y},
+        {destination.x, destination.y}
+    };
+
+    s_pShader->use();
+    CHECK_GL_ERROR_DEBUG();
+    s_pShader->setUniformForModelViewProjectionMatrix();
+    CHECK_GL_ERROR_DEBUG();
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &s_tColor.r, 1);
+    CHECK_GL_ERROR_DEBUG();
+
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+    CHECK_GL_ERROR_DEBUG();
+    glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    CHECK_GL_ERROR_DEBUG();
+    glDrawArrays(GL_LINES, 0, 2);
+
+    CC_INCREMENT_GL_DRAWS(1);
+}
+
+void ccDrawRect( CCPoint origin, CCPoint destination )
+{
+    ccDrawLine(CCPointMake(origin.x, origin.y), CCPointMake(destination.x, origin.y));
+    ccDrawLine(CCPointMake(destination.x, origin.y), CCPointMake(destination.x, destination.y));
+    ccDrawLine(CCPointMake(destination.x, destination.y), CCPointMake(origin.x, destination.y));
+    ccDrawLine(CCPointMake(origin.x, destination.y), CCPointMake(origin.x, origin.y));
+}
+
+void ccDrawSolidRect( CCPoint origin, CCPoint destination, ccColor4F color )
+{
+    CCPoint vertices[] = {
+        origin,
+        ccp(destination.x, origin.y),
+        destination,
+        ccp(origin.x, destination.y)
+    };
+
+    ccDrawSolidPoly(vertices, 4, color );
+}
+
+void ccDrawPoly( const CCPoint *poli, unsigned int numberOfPoints, bool closePolygon )
+{
+    lazy_init();
+
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &s_tColor.r, 1);
+
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+
+    // XXX: Mac OpenGL error. arrays can't go out of scope before draw is executed
+    ccVertex2F* newPoli = new ccVertex2F[numberOfPoints];
+
+    // iPhone and 32-bit machines optimization
+    if( sizeof(CCPoint) == sizeof(ccVertex2F) )
+        glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, poli);
+
+    else
+    {
+        // Mac on 64-bit
+        for( unsigned int i=0; i<numberOfPoints;i++) {
+            newPoli[i].x = poli[i].x;
+            newPoli[i].y = poli[i].y;
+        }
+        glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, newPoli);
     }
 
     if( closePolygon )
-	{
-        glDrawArrays(fill? GL_TRIANGLE_FAN : GL_LINE_LOOP, 0, numberOfPoints);
-	}
+        glDrawArrays(GL_LINE_LOOP, 0, (GLsizei) numberOfPoints);
     else
-	{
-		glDrawArrays(fill? GL_TRIANGLE_FAN : GL_LINE_STRIP, 0, numberOfPoints);
-	}
+        glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) numberOfPoints);
 
-    // restore default state
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnable(GL_TEXTURE_2D);
-    delete[] newPoint;
+    CC_SAFE_DELETE_ARRAY(newPoli);
+
+    CC_INCREMENT_GL_DRAWS(1);
 }
 
-void ccDrawCircle(const CCPoint& center, float r, float a, int segs, bool drawLineToCenter)
+void ccDrawSolidPoly( const CCPoint *poli, unsigned int numberOfPoints, ccColor4F color )
 {
-	int additionalSegment = 1;
-	if (drawLineToCenter)
-	{
-		++additionalSegment;
-	}
+    lazy_init();
 
-	const float coef = 2.0f * (float) (M_PI) /segs;
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();    
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &color.r, 1);
 
-	float *vertices = new float[2*(segs+2)]; //	float *vertices = (float *)malloc( sizeof(float)*2*(segs+2));
-	if( ! vertices )
-	{
-		return;
-	}
-	
-	memset( vertices,0, sizeof(float)*2*(segs+2));
-	
-	for(int i=0;i<=segs;i++)
-	{
-		float rads = i*coef;
-		float j = r * cosf(rads + a) + center.x;
-		float k = r * sinf(rads + a) + center.y;
-		
-		vertices[i*2] = j * CC_CONTENT_SCALE_FACTOR();
-		vertices[i*2+1] =k * CC_CONTENT_SCALE_FACTOR();
-	}
-	vertices[(segs+1)*2] = center.x * CC_CONTENT_SCALE_FACTOR();
-	vertices[(segs+1)*2+1] = center.y * CC_CONTENT_SCALE_FACTOR();
-	
-	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-	// Needed states: GL_VERTEX_ARRAY, 
-	// Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	
-	glVertexPointer(2, GL_FLOAT, 0, vertices);	
-	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) segs+additionalSegment);
-	
-	// restore default state
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnable(GL_TEXTURE_2D);	
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
 
-	delete[] vertices; //	free(vertices);
+    // XXX: Mac OpenGL error. arrays can't go out of scope before draw is executed
+    ccVertex2F* newPoli = new ccVertex2F[numberOfPoints];
+
+    // iPhone and 32-bit machines optimization
+    if( sizeof(CCPoint) == sizeof(ccVertex2F) )
+    {
+        glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, poli);
+    }
+    else
+    {
+        // Mac on 64-bit
+        for( unsigned int i=0; i<numberOfPoints;i++)
+        {
+            newPoli[i] = vertex2( poli[i].x, poli[i].y );
+        }
+        glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, newPoli);
+    }    
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei) numberOfPoints);
+
+    CC_SAFE_DELETE_ARRAY(newPoli);
+    CC_INCREMENT_GL_DRAWS(1);
 }
 
-void ccDrawQuadBezier(const CCPoint& origin, const CCPoint& control, const CCPoint& destination, int segments)
+void ccDrawCircle( const CCPoint& center, float radius, float angle, unsigned int segments, bool drawLineToCenter)
 {
-	CCPoint *vertices = new CCPoint[segments + 1];
-	
-	float t = 0.0f;
-	for(int i = 0; i < segments; i++)
-	{
-		float x = powf(1 - t, 2) * origin.x + 2.0f * (1 - t) * t * control.x + t * t * destination.x;
-		float y = powf(1 - t, 2) * origin.y + 2.0f * (1 - t) * t * control.y + t * t * destination.y;
-		vertices[i] = CCPointMake(x * CC_CONTENT_SCALE_FACTOR(), y * CC_CONTENT_SCALE_FACTOR());
-		t += 1.0f / segments;
-	}
-	vertices[segments] = CCPointMake(destination.x  * CC_CONTENT_SCALE_FACTOR(), destination.y * CC_CONTENT_SCALE_FACTOR());
-	
-	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-	// Needed states: GL_VERTEX_ARRAY, 
-	// Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	
-	glVertexPointer(2, GL_FLOAT, 0, vertices);	
-	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) segments + 1);
-	delete[] vertices;
-	
-	// restore default state
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnable(GL_TEXTURE_2D);	
+    lazy_init();
+
+    int additionalSegment = 1;
+    if (drawLineToCenter)
+        additionalSegment++;
+
+    const float coef = 2.0f * (float)M_PI/segments;
+
+    GLfloat *vertices = (GLfloat*)calloc( sizeof(GLfloat)*2*(segments+2), 1);
+    if( ! vertices )
+        return;
+
+    for(unsigned int i = 0;i <= segments; i++) {
+        float rads = i*coef;
+        GLfloat j = radius * cosf(rads + angle) + center.x;
+        GLfloat k = radius * sinf(rads + angle) + center.y;
+
+        vertices[i*2] = j;
+        vertices[i*2+1] = k;
+    }
+    vertices[(segments+1)*2] = center.x;
+    vertices[(segments+1)*2+1] = center.y;
+
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &s_tColor.r, 1);
+
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+
+    glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) segments+additionalSegment);
+
+    free( vertices );
+
+    CC_INCREMENT_GL_DRAWS(1);
 }
 
-void ccDrawCubicBezier(const CCPoint& origin, const CCPoint& control1, const CCPoint& control2, const CCPoint& destination, int segments)
+void ccDrawQuadBezier(const CCPoint& origin, const CCPoint& control, const CCPoint& destination, unsigned int segments)
 {
-	CCPoint *vertices = new CCPoint[segments + 1];
-	
-	float t = 0;
-	for(int i = 0; i < segments; ++i)
-	{
-		float x = powf(1 - t, 3) * origin.x + 3.0f * powf(1 - t, 2) * t * control1.x + 3.0f * (1 - t) * t * t * control2.x + t * t * t * destination.x;
-		float y = powf(1 - t, 3) * origin.y + 3.0f * powf(1 - t, 2) * t * control1.y + 3.0f * (1 - t) * t * t * control2.y + t * t * t * destination.y;
-		vertices[i] = CCPointMake(x * CC_CONTENT_SCALE_FACTOR(), y * CC_CONTENT_SCALE_FACTOR());
-		t += 1.0f / segments;
-	}
-	vertices[segments] = CCPointMake(destination.x * CC_CONTENT_SCALE_FACTOR(), destination.y * CC_CONTENT_SCALE_FACTOR());
-	
-	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-	// Needed states: GL_VERTEX_ARRAY, 
-	// Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	
-	glVertexPointer(2, GL_FLOAT, 0, vertices);	
-	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) segments + 1);
-	delete[] vertices;
-	
-	// restore default state
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnable(GL_TEXTURE_2D);	
+    lazy_init();
+
+    ccVertex2F* vertices = new ccVertex2F[segments + 1];
+
+    float t = 0.0f;
+    for(unsigned int i = 0; i < segments; i++)
+    {
+        vertices[i].x = powf(1 - t, 2) * origin.x + 2.0f * (1 - t) * t * control.x + t * t * destination.x;
+        vertices[i].y = powf(1 - t, 2) * origin.y + 2.0f * (1 - t) * t * control.y + t * t * destination.y;
+        t += 1.0f / segments;
+    }
+    vertices[segments].x = destination.x;
+    vertices[segments].y = destination.y;
+
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &s_tColor.r, 1);
+
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+
+    glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) segments + 1);
+    CC_SAFE_DELETE_ARRAY(vertices);
+
+    CC_INCREMENT_GL_DRAWS(1);
 }
-}//namespace   cocos2d 
+
+void ccDrawCatmullRom( CCPointArray *points, unsigned int segments )
+{
+    ccDrawCardinalSpline( points, 0.5f, segments );
+}
+
+void ccDrawCardinalSpline( CCPointArray *config, CCFloat tension,  unsigned int segments )
+{
+    lazy_init();
+
+    ccVertex2F* vertices = new ccVertex2F[segments + 1];
+
+    unsigned int p;
+    CCFloat lt;
+    CCFloat deltaT = 1.0f / config->count();
+
+    for( unsigned int i=0; i < segments+1;i++) {
+
+        CCFloat dt = (CCFloat)i / segments;
+
+        // border
+        if( dt == 1 ) {
+            p = config->count() - 1;
+            lt = 1;
+        } else {
+            p = dt / deltaT;
+            lt = (dt - deltaT * (CCFloat)p) / deltaT;
+        }
+
+        // Interpolate
+        CCPoint pp0 = config->getControlPointAtIndex(p-1);
+        CCPoint pp1 = config->getControlPointAtIndex(p+0);
+        CCPoint pp2 = config->getControlPointAtIndex(p+1);
+        CCPoint pp3 = config->getControlPointAtIndex(p+2);
+
+        CCPoint newPos = ccCardinalSplineAt( pp0, pp1, pp2, pp3, tension, lt);
+        vertices[i].x = newPos.x;
+        vertices[i].y = newPos.y;
+    }
+
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();    
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*)&s_tColor.r, 1);
+
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+
+    glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) segments + 1);
+
+    CC_SAFE_DELETE_ARRAY(vertices);
+    CC_INCREMENT_GL_DRAWS(1);
+}
+
+void ccDrawCubicBezier(const CCPoint& origin, const CCPoint& control1, const CCPoint& control2, const CCPoint& destination, unsigned int segments)
+{
+    lazy_init();
+
+    ccVertex2F* vertices = new ccVertex2F[segments + 1];
+
+    float t = 0;
+    for(unsigned int i = 0; i < segments; i++)
+    {
+        vertices[i].x = powf(1 - t, 3) * origin.x + 3.0f * powf(1 - t, 2) * t * control1.x + 3.0f * (1 - t) * t * t * control2.x + t * t * t * destination.x;
+        vertices[i].y = powf(1 - t, 3) * origin.y + 3.0f * powf(1 - t, 2) * t * control1.y + 3.0f * (1 - t) * t * t * control2.y + t * t * t * destination.y;
+        t += 1.0f / segments;
+    }
+    vertices[segments].x = destination.x;
+    vertices[segments].y = destination.y;
+
+    s_pShader->use();
+    s_pShader->setUniformForModelViewProjectionMatrix();
+    s_pShader->setUniformLocationWith4fv(s_nColorLocation, (GLfloat*) &s_tColor.r, 1);
+
+    ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
+
+    glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) segments + 1);
+    CC_SAFE_DELETE_ARRAY(vertices);
+
+    CC_INCREMENT_GL_DRAWS(1);
+}
+
+void ccDrawColor4F( GLfloat r, GLfloat g, GLfloat b, GLfloat a )
+{
+    s_tColor.r = r;
+    s_tColor.g = g;
+    s_tColor.b = b;
+    s_tColor.a = a;
+}
+
+void ccPointSize( GLfloat pointSize )
+{
+    s_fPointSize = pointSize * CC_CONTENT_SCALE_FACTOR();
+
+    //TODO :glPointSize( pointSize );
+
+}
+
+void ccDrawColor4B( GLubyte r, GLubyte g, GLubyte b, GLubyte a )
+{
+    s_tColor.r = r/255.0f;
+    s_tColor.g = g/255.0f;
+    s_tColor.b = b/255.0f;
+    s_tColor.a = a/255.0f;
+}
+
+NS_CC_END

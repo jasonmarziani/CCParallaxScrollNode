@@ -1,8 +1,6 @@
 #include "HelloWorldScene.h"
-#include "SimpleAudioEngine.h"
 
 using namespace cocos2d;
-using namespace CocosDenshion;
 
 CCScene* HelloWorld::scene()
 {
@@ -20,8 +18,8 @@ bool HelloWorld::init()
     parallax = CCParallaxScrollNode::node();
     CCSize screen = CCDirector::sharedDirector()->getWinSize();
     
-    CCSprite *land1 = CCSprite::spriteWithFile("land_green.png");
-    CCSprite *land2 = CCSprite::spriteWithFile("land_green.png");
+    CCSprite *land1 = CCSprite::create("land_green.png");
+    CCSprite *land2 = CCSprite::create("land_green.png");
     parallax->addInfiniteScrollXWithZ(0, ccp(0.5,0.2), ccp(0,0), land1, land2, NULL);
     
     CCSprite *land3 = CCSprite::spriteWithFile("land_grey.png");
@@ -51,7 +49,7 @@ bool HelloWorld::init()
 	return true;
 }
 
-void HelloWorld::update(ccTime dt)
+void HelloWorld::update(float dt)
 {
 	parallax->updateWithVelocity(ccp(-.5,0), dt);
 }

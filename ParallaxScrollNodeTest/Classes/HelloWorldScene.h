@@ -13,7 +13,7 @@ public:
     
     CCParallaxScrollNode *parallax;
     
-    void update(ccTime dt);
+    void update(float dt);
     float randomValueBetween(float low, float high);
 };
 
