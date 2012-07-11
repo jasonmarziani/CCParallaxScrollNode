@@ -9,7 +9,7 @@ class HelloWorld : public cocos2d::CCLayer
 public:
 	virtual bool init();  
 	static cocos2d::CCScene* scene();
-	LAYER_NODE_FUNC(HelloWorld);
+	LAYER_CREATE_FUNC(HelloWorld);
     
     CCParallaxScrollNode *parallax;
     

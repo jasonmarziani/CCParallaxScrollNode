@@ -1908,26 +1908,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/cocos2dx/platform/third_party/ios/libraries\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libcurl/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libcurl/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libcurl/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libjpeg/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libjpeg/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libjpeg/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libpng/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libpng/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libpng/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libprofiler/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libprofiler/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libtiff/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libtiff/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libtiff/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libxml2/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libxml2/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libxml2/libs/x86\"",
 					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/ios/libraries\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/win32/libraries\"",
 				);
 				OTHER_LDFLAGS = (
 					"-lxml2",
@@ -1959,26 +1940,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/cocos2dx/platform/third_party/ios/libraries\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libcurl/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libcurl/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libcurl/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libjpeg/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libjpeg/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libjpeg/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libpng/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libpng/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libpng/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libprofiler/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libprofiler/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libtiff/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libtiff/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libtiff/libs/x86\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libxml2/libs/armeabi\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libxml2/libs/armeabi-v7a\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/android/prebuilt/libxml2/libs/x86\"",
 					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/ios/libraries\"",
-					"\"$(SRCROOT)/ParallaxScrollNodeTest/libs/cocos2dx/platform/third_party/win32/libraries\"",
 				);
 				OTHER_LDFLAGS = (
 					"-lxml2",

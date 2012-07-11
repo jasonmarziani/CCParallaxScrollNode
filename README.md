@@ -1,24 +1,20 @@
-This project provides Parallax Scrolling for a Cocos2d-X project.
+# CCParallaxScrollNode for cocos2d-x
 
-This code is 100% based on the CCParallaxScrollingNode project for cocos2d-iphone:
-https://github.com/aramkocharyan/cocos2d
-(We even used the assets!)
+This project provides infinite Parallax Scrolling for a Cocos2d-X project. 
 
-For more info on the original project:
-http://ak.net84.net/iphone/creating-a-repeating-backgroundinfinite-parallax-effect-in-cocos2d/
+This code is 100% based on the [CCParallaxScrollingNode](https://github.com/aramkocharyan/cocos2d) project for cocos2d-iphone. (We even used the assets!) For more info on the original project check out the [write-up](http://ak.net84.net/iphone/creating-a-repeating-backgroundinfinite-parallax-effect-in-cocos2d/)
 
-To test:
-Run the included project in XCode 4.
+**To test**: Run the included project in XCode 4.X
 
-To use:
-Include the following in your project
-CCParallaxScrollNode.h
-CCParallaxScrollNode.cpp
-CCParallaxScrollOffset.h
-CCParallaxScrollOffset.cpp
+**To use**: Include the following in your project
+
+	CCParallaxScrollNode.h
+	CCParallaxScrollNode.cpp
+	CCParallaxScrollOffset.h
+	CCParallaxScrollOffset.cpp
 
 
---------------------------------------------------------
+---
 The MIT License
 
 Copyright (c) 2012 Little Wins LLC

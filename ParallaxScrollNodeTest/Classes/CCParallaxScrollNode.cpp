@@ -161,3 +161,29 @@ void CCParallaxScrollNode::addInfiniteScrollXWithZ(int z, CCPoint ratio, CCPoint
 	
 	this->addInfiniteScrollWithObjects(argArray, z, ratio, pos, ccp(1,0));
 }
+
+void CCParallaxScrollNode::addInfiniteScrollYWithZ(int z, CCPoint ratio, CCPoint pos, CCSprite* firstObject, ...){
+	va_list args;
+    va_start(args, firstObject);
+	
+	CCArray* argArray = new CCArray();
+	for (CCSprite *arg = firstObject; arg != NULL; arg = va_arg(args, CCSprite*)) {
+		argArray->addObject(arg);
+	}
+	va_end(args);
+	
+	this->addInfiniteScrollWithObjects(argArray, z, ratio, pos, ccp(0,1));
+}
+
+void CCParallaxScrollNode::addInfiniteScrollWithZ(int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCSprite* firstObject, ...){
+	va_list args;
+    va_start(args, firstObject);
+	
+	CCArray* argArray = new CCArray();
+	for (CCSprite *arg = firstObject; arg != NULL; arg = va_arg(args, CCSprite*)) {
+		argArray->addObject(arg);
+	}
+	va_end(args);
+	
+	this->addInfiniteScrollWithObjects(argArray, z, ratio, pos, dir);
+}
