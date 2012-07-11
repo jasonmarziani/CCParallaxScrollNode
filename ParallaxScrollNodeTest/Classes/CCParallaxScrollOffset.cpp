@@ -23,12 +23,12 @@ bool CCParallaxScrollOffset::init()
 }
 
 CCParallaxScrollOffset* CCParallaxScrollOffset::scrollWithNode(CCNode *node, CCPoint r, CCPoint p, CCPoint s){
-    CCParallaxScrollOffset *offset = CCParallaxScrollOffset::node();
+    CCParallaxScrollOffset *offset = CCParallaxScrollOffset::create();
 	return (CCParallaxScrollOffset*)offset->initWithNode(node,r,p,s);
 }
 
 CCParallaxScrollOffset* CCParallaxScrollOffset::scrollWithNode(CCNode *node, CCPoint r, CCPoint p, CCPoint s, CCPoint v){
-    CCParallaxScrollOffset *offset = CCParallaxScrollOffset::node();
+    CCParallaxScrollOffset *offset = CCParallaxScrollOffset::create();
 	return (CCParallaxScrollOffset*)offset->initWithNode(node,r,p,s,v);
 }
 

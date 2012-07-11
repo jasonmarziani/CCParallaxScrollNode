@@ -28,7 +28,12 @@ THE SOFTWARE.
 #include "CCCommon.h"
 #include "CCPlatformMacros.h"
 
-NS_CC_BEGIN;
+NS_CC_BEGIN
+
+/**
+ * @addtogroup platform
+ * @{
+ */
 
 /* On iOS, should create autorelease pool when create a new thread
  * and release it when the thread end.
@@ -36,15 +41,18 @@ NS_CC_BEGIN;
 class CC_DLL CCThread
 {
 public:
-	CCThread() : m_pAutoreasePool(0) {}
-	~CCThread();
+    CCThread() : m_pAutoreasePool(0) {}
+    ~CCThread();
 
-	void createAutoreleasePool();
+    void createAutoreleasePool();
 
 private:
-	void *m_pAutoreasePool;
+    void *m_pAutoreasePool;
 };
 
-NS_CC_END;
+// end of platform group
+/// @}
 
-#endif	// __CC_PLATFORM_THREAD_H__
+NS_CC_END
+
+#endif    // __CC_PLATFORM_THREAD_H__

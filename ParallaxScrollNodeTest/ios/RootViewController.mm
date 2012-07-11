@@ -2,8 +2,8 @@
 //  ParallaxScrollNodeTestAppController.h
 //  ParallaxScrollNodeTest
 //
-//  Created by Jason Marziani on 3/26/12.
-//  Copyright Little Wins LLC 2012. All rights reserved.
+//  Created by Brandon Dorris on 7/6/12.
+//  Copyright sirrodnodnarb inc 2012. All rights reserved.
 //
 
 #import "RootViewController.h"
@@ -36,7 +36,7 @@
 */
 // Override to allow orientations other than the default landscape orientation.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return UIInterfaceOrientationIsLandscape( interfaceOrientation );
+    return UIInterfaceOrientationIsLandscape( interfaceOrientation );
     
     // switch to this line if you want to set portrait view
     // return UIInterfaceOrientationIsPortrait( interfaceOrientation );

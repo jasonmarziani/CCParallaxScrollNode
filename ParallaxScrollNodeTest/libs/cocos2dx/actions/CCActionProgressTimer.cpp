@@ -23,136 +23,148 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 #include "CCActionProgressTimer.h"
-#include "CCProgressTimer.h"
+#include "misc_nodes/CCProgressTimer.h"
+#include "cocoa/CCZone.h"
 
-namespace cocos2d
+NS_CC_BEGIN
+
+#define kProgressTimerCast CCProgressTimer*
+
+// implementation of CCProgressTo
+
+CCProgressTo* CCProgressTo::actionWithDuration(float duration, float fPercent)
 {
-	#define kProgressTimerCast CCProgressTimer*
+    return CCProgressTo::create(duration, fPercent);
+}
 
-    // implementation of CCProgressTo
+CCProgressTo* CCProgressTo::create(float duration, float fPercent)
+{
+    CCProgressTo *pProgressTo = new CCProgressTo();
+    pProgressTo->initWithDuration(duration, fPercent);
+    pProgressTo->autorelease();
 
-	CCProgressTo* CCProgressTo::actionWithDuration(ccTime duration, float fPercent)
-	{
-		CCProgressTo *pProgressTo = new CCProgressTo();
-		pProgressTo->initWithDuration(duration, fPercent);
-		pProgressTo->autorelease();
+    return pProgressTo;
+}
 
-		return pProgressTo;
-	}
- 
-	bool CCProgressTo::initWithDuration(ccTime duration, float fPercent)
-	{
-		if (CCActionInterval::initWithDuration(duration))
-		{
-			m_fTo = fPercent;
+bool CCProgressTo::initWithDuration(float duration, float fPercent)
+{
+    if (CCActionInterval::initWithDuration(duration))
+    {
+        m_fTo = fPercent;
 
-			return true;
-		}
+        return true;
+    }
 
-		return false;
-	}
+    return false;
+}
 
-	CCObject* CCProgressTo::copyWithZone(CCZone *pZone)
-	{
-		CCZone* pNewZone = NULL;
-		CCProgressTo* pCopy = NULL;
-		if(pZone && pZone->m_pCopyObject) 
-		{
-			//in case of being called at sub class
-			pCopy = (CCProgressTo*)(pZone->m_pCopyObject);
-		}
-		else
-		{
-			pCopy = new CCProgressTo();
-			pZone = pNewZone = new CCZone(pCopy);
-		}
+CCObject* CCProgressTo::copyWithZone(CCZone *pZone)
+{
+    CCZone* pNewZone = NULL;
+    CCProgressTo* pCopy = NULL;
+    if(pZone && pZone->m_pCopyObject) 
+    {
+        //in case of being called at sub class
+        pCopy = (CCProgressTo*)(pZone->m_pCopyObject);
+    }
+    else
+    {
+        pCopy = new CCProgressTo();
+        pZone = pNewZone = new CCZone(pCopy);
+    }
 
-		CCActionInterval::copyWithZone(pZone);
+    CCActionInterval::copyWithZone(pZone);
 
-		pCopy->initWithDuration(m_fDuration, m_fTo);
+    pCopy->initWithDuration(m_fDuration, m_fTo);
 
-		CC_SAFE_DELETE(pNewZone);
-		return pCopy;
-	}
+    CC_SAFE_DELETE(pNewZone);
+    return pCopy;
+}
 
-	void CCProgressTo::startWithTarget(CCNode *pTarget)
-	{
-		CCActionInterval::startWithTarget(pTarget);
-		m_fFrom = ((kProgressTimerCast)(pTarget))->getPercentage();
+void CCProgressTo::startWithTarget(CCNode *pTarget)
+{
+    CCActionInterval::startWithTarget(pTarget);
+    m_fFrom = ((kProgressTimerCast)(pTarget))->getPercentage();
 
-		// XXX: Is this correct ?
-		// Adding it to support CCRepeat
-		if (m_fFrom == 100)
-		{
-			m_fFrom = 0;
-		}
-	}
+    // XXX: Is this correct ?
+    // Adding it to support CCRepeat
+    if (m_fFrom == 100)
+    {
+        m_fFrom = 0;
+    }
+}
 
-	void CCProgressTo::update(ccTime time)
-	{
-		((kProgressTimerCast)(m_pTarget))->setPercentage(m_fFrom + (m_fTo - m_fFrom) * time);
-	}
+void CCProgressTo::update(float time)
+{
+    ((kProgressTimerCast)(m_pTarget))->setPercentage(m_fFrom + (m_fTo - m_fFrom) * time);
+}
 
-	// implementation of CCProgressFromTo
- 
-	CCProgressFromTo* CCProgressFromTo::actionWithDuration(ccTime duration, float fFromPercentage, float fToPercentage)
-	{
-		CCProgressFromTo *pProgressFromTo = new CCProgressFromTo();
-		pProgressFromTo->initWithDuration(duration, fFromPercentage, fToPercentage);
-		pProgressFromTo->autorelease();
+// implementation of CCProgressFromTo
 
-		return pProgressFromTo;
-	}
+CCProgressFromTo* CCProgressFromTo::actionWithDuration(float duration, float fFromPercentage, float fToPercentage)
+{
+    return CCProgressFromTo::create(duration, fFromPercentage, fToPercentage);
+}
 
-	bool CCProgressFromTo::initWithDuration(ccTime duration, float fFromPercentage, float fToPercentage)
-	{
-		if (CCActionInterval::initWithDuration(duration))
-		{
-			m_fTo = fToPercentage;
-			m_fFrom = fFromPercentage;
+CCProgressFromTo* CCProgressFromTo::create(float duration, float fFromPercentage, float fToPercentage)
+{
+    CCProgressFromTo *pProgressFromTo = new CCProgressFromTo();
+    pProgressFromTo->initWithDuration(duration, fFromPercentage, fToPercentage);
+    pProgressFromTo->autorelease();
 
-			return true;
-		}
+    return pProgressFromTo;
+}
 
-		return false;
-	}
+bool CCProgressFromTo::initWithDuration(float duration, float fFromPercentage, float fToPercentage)
+{
+    if (CCActionInterval::initWithDuration(duration))
+    {
+        m_fTo = fToPercentage;
+        m_fFrom = fFromPercentage;
 
-	CCObject* CCProgressFromTo::copyWithZone(CCZone *pZone)
-	{
-		CCZone* pNewZone = NULL;
-		CCProgressFromTo* pCopy = NULL;
-		if(pZone && pZone->m_pCopyObject) 
-		{
-			//in case of being called at sub class
-			pCopy = (CCProgressFromTo*)(pZone->m_pCopyObject);
-		}
-		else
-		{
-			pCopy = new CCProgressFromTo();
-			pZone = pNewZone = new CCZone(pCopy);
-		}
+        return true;
+    }
 
-		CCActionInterval::copyWithZone(pZone);
+    return false;
+}
 
-		pCopy->initWithDuration(m_fDuration, m_fFrom, m_fTo);
+CCObject* CCProgressFromTo::copyWithZone(CCZone *pZone)
+{
+    CCZone* pNewZone = NULL;
+    CCProgressFromTo* pCopy = NULL;
+    if(pZone && pZone->m_pCopyObject) 
+    {
+        //in case of being called at sub class
+        pCopy = (CCProgressFromTo*)(pZone->m_pCopyObject);
+    }
+    else
+    {
+        pCopy = new CCProgressFromTo();
+        pZone = pNewZone = new CCZone(pCopy);
+    }
 
-		CC_SAFE_DELETE(pNewZone);
-		return pCopy;
-	}
+    CCActionInterval::copyWithZone(pZone);
 
-	CCActionInterval* CCProgressFromTo::reverse(void)
-	{
-		return CCProgressFromTo::actionWithDuration(m_fDuration, m_fTo, m_fFrom);
-	}
+    pCopy->initWithDuration(m_fDuration, m_fFrom, m_fTo);
 
-	void CCProgressFromTo::startWithTarget(CCNode *pTarget)
-	{
-		CCActionInterval::startWithTarget(pTarget);
-	}
+    CC_SAFE_DELETE(pNewZone);
+    return pCopy;
+}
 
-	void CCProgressFromTo::update(ccTime time)
-	{
-		((kProgressTimerCast)(m_pTarget))->setPercentage(m_fFrom + (m_fTo - m_fFrom) * time);
-	}
+CCActionInterval* CCProgressFromTo::reverse(void)
+{
+    return CCProgressFromTo::create(m_fDuration, m_fTo, m_fFrom);
+}
 
-}// end of namespace cocos2d
+void CCProgressFromTo::startWithTarget(CCNode *pTarget)
+{
+    CCActionInterval::startWithTarget(pTarget);
+}
+
+void CCProgressFromTo::update(float time)
+{
+    ((kProgressTimerCast)(m_pTarget))->setPercentage(m_fFrom + (m_fTo - m_fFrom) * time);
+}
+
+NS_CC_END
+
