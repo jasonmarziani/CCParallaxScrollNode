@@ -19,7 +19,6 @@ class CCParallaxScrollNode : public cocos2d::CCLayer
 public:
 	virtual bool init();
     ~CCParallaxScrollNode();
-	LAYER_CREATE_FUNC(CCParallaxScrollNode);
     
     CCSpriteBatchNode batch;
     CCSize _range;
@@ -39,6 +38,8 @@ public:
     void addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir);
     void addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel);
     void addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel, CCPoint padding);
+
+    CREATE_FUNC(CCParallaxScrollNode);
     
 };
 
