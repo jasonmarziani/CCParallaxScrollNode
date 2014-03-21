@@ -18,26 +18,28 @@ class CCParallaxScrollNode : public cocos2d::CCLayer
 {
 public:
 	virtual bool init();
-	LAYER_NODE_FUNC(CCParallaxScrollNode);
+    ~CCParallaxScrollNode();
     
     CCSpriteBatchNode batch;
     CCSize _range;
-    CCMutableArray<CCParallaxScrollOffset*> *_scrollOffsets;
+    CCArray *_scrollOffsets;
     
     void addChild(CCSprite *node, int z, CCPoint r, CCPoint p, CCPoint so);
     void addChild(CCSprite *node, int z, CCPoint r, CCPoint p, CCPoint so, CCPoint v);
     
     void removeChild(CCSprite *node, bool cleanup);
-    void updateWithVelocity(CCPoint vel, ccTime dt);
-    void updateWithYPosition(float y, ccTime dt);
+    void updateWithVelocity(CCPoint vel, float dt);
+    void updateWithYPosition(float y, float dt);
     
     void addInfiniteScrollWithZ(int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCSprite *firstObject, ...);
     void addInfiniteScrollXWithZ(int z, CCPoint ratio, CCPoint pos, CCSprite* firstObject, ...);
     void addInfiniteScrollYWithZ(int z,  CCPoint ratio, CCPoint pos, CCSprite* firstObject, ...);
     
-    void addInfiniteScrollWithObjects(CCMutableArray<CCSprite*> *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir);
-    void addInfiniteScrollWithObjects(CCMutableArray<CCSprite*> *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel);
-    void addInfiniteScrollWithObjects(CCMutableArray<CCSprite*> *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel, CCPoint padding);
+    void addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir);
+    void addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel);
+    void addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel, CCPoint padding);
+
+    CREATE_FUNC(CCParallaxScrollNode);
     
 };
 

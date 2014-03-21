@@ -1,9 +1,9 @@
 //
 //  main.m
-//  ParallaxScrollNodeTest
+//  ParticlePositionTest
 //
-//  Created by Jason Marziani on 3/26/12.
-//  Copyright Little Wins LLC 2012. All rights reserved.
+//  Created by Brandon Dorris on 7/6/12.
+//  Copyright sirrodnodnarb inc 2012. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
