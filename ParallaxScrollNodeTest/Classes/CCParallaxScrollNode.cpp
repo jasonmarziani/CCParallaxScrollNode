@@ -1,12 +1,16 @@
-//
-//  ParallaxScrollNode.cpp
-//  ParallaxScrollNodeTest
-//
-//  Created by Jason Marziani on 3/26/12.
-//  Copyright (c) 2012 Little Wins LLC. All rights reserved.
-//
+///
+///  ParallaxScrollNode.h
+///  ParallaxScrollNodeTest
+///
+///  Created by Jason Marziani on 3/26/12.
+///  Copyright (c) 2012 Little Wins LLC. All rights reserved.
+///
+///  Modification for Cocos2d-x 3.0 by Oscar Kurniawan @oscarkm
 
 #include "CCParallaxScrollNode.h"
+
+using namespace cocos2d;
+using namespace std;
 
 #ifndef PTM_RATIO
 #define PTM_RATIO 32
@@ -16,102 +20,107 @@
 #define SIGN(x) ((x < 0) ? -1 : (x > 0))
 #endif
 
-bool CCParallaxScrollNode::init()
+ParallaxScrollNode::ParallaxScrollNode() : _scrollOffsets(100)
 {
-	if ( !CCLayer::init() ) return false;
+}
+
+bool ParallaxScrollNode::init()
+{
+	if ( !Layer::init() ) return false;
     
-    _scrollOffsets = CCArray::create();
-    _scrollOffsets->retain();
-    CCSize screen = CCDirector::sharedDirector()->getWinSize();
-    _range = CCSizeMake(screen.width, screen.height);
-    this->setAnchorPoint(ccp(0,0));
     
+    Size screen = Director::getInstance()->getWinSize();
+    _range = Size::Size(screen.width, screen.height);
+    this->setAnchorPoint(Point(0,0));
+    
+	log("size: %i", _scrollOffsets.size());
+
     return true;
 }
 
-CCParallaxScrollNode::~CCParallaxScrollNode()
-{
-    if (_scrollOffsets) {
-        _scrollOffsets->release();
-    }
-}
-
 // Used with box2d style velocity (m/s where m = 32 pixels), but box2d is not required
-void CCParallaxScrollNode::updateWithVelocity(CCPoint vel, float dt)
+void ParallaxScrollNode::updateWithVelocity(Point vel, float dt)
 {
-	vel = ccpMult(vel, PTM_RATIO);
-//	CCLog("count: %i", _scrollOffsets->count());
-    CCObject* object;
-    CCARRAY_FOREACH(_scrollOffsets, object)
+	vel = vel * PTM_RATIO;
+	//log("count: %i", _scrollOffsets.size());
+    //Object *obj;
+    for(auto obj: this->_scrollOffsets)
     {
-        CCParallaxScrollOffset* scrollOffset = dynamic_cast<CCParallaxScrollOffset*>(object); 
-		CCPoint relVel = ccpMult(scrollOffset->getRelVelocity(), PTM_RATIO);
-		CCPoint totalVel = ccpAdd(vel, relVel);
-		CCPoint offset = ccpCompMult(ccpMult(totalVel, dt), scrollOffset->getRatio());
+        ParallaxScrollOffset *scrollOffset = (ParallaxScrollOffset*) obj;
+		Point relVel = scrollOffset->getRelVelocity() * PTM_RATIO;
+		Point totalVel = vel + relVel;
+		Point offset = ccpCompMult(totalVel * dt, scrollOffset->getRatio());
         
-        CCNode *child = scrollOffset->getTheChild();
-		child->setPosition(ccpAdd(child->getPosition(), offset));
+        Node *child = scrollOffset->getTheChild();
+		child->setPosition(child->getPosition() + offset);
 		
 		if ( (offset.x < 0 && child->getPosition().x + child->getContentSize().width < 0) ||
             (offset.x > 0 && child->getPosition().x > _range.width) ) {
-			child->setPosition(ccpAdd(child->getPosition(), ccp(-SIGN(offset.x) * fabs(scrollOffset->getScrollOffset().x), 0)));
+			child->setPosition(child->getPosition() + Point(-SIGN(offset.x) * fabs(scrollOffset->getScrollOffset().x), 0));
 		}
 		
 		// Positive y indicates upward movement in cocos2d
 		if ( (offset.y < 0 && child->getPosition().y + child->getContentSize().height < 0) ||
 			(offset.y > 0 && child->getPosition().y > _range.height) ) {
-			child->setPosition(ccpAdd(child->getPosition(), ccp(0, -SIGN(offset.y) * fabs(scrollOffset->getScrollOffset().y))));
+			child->setPosition((child->getPosition() + Point(0, -SIGN(offset.y) * fabs(scrollOffset->getScrollOffset().y))));
 		}
 	}
 }
 
 
-void CCParallaxScrollNode::updateWithYPosition(float y, float dt)
+void ParallaxScrollNode::updateWithYPosition(float y, float dt)
 {	
-    
-    CCObject* object;
-    CCARRAY_FOREACH(_scrollOffsets, object)
+	for(auto obj: this->_scrollOffsets)
     {
-        CCParallaxScrollOffset* scrollOffset = dynamic_cast<CCParallaxScrollOffset*>(object); 
-		CCNode *child = scrollOffset->getTheChild();
+        ParallaxScrollOffset *scrollOffset = (ParallaxScrollOffset*) obj;
+		Node *child = scrollOffset->getTheChild();
 		float offset = y * scrollOffset->getRatio().y;
-		child->setPosition(ccp(child->getPosition().x, scrollOffset->getOrigPosition().y + offset));
+		child->setPosition(Point(child->getPosition().x, scrollOffset->getOrigPosition().y + offset));
 	}
 }
 
 
-void CCParallaxScrollNode::addChild(CCSprite *node, int z, CCPoint r, CCPoint p, CCPoint so, CCPoint v)
+void ParallaxScrollNode::addChild(Sprite *node, int z, Point r, Point p, Point so, Point v)
 {
-	node->setAnchorPoint(ccp(0,0));
+	node->setAnchorPoint(Point(0,0));
     
-	CCParallaxScrollOffset *obj = CCParallaxScrollOffset::scrollWithNode(node, r, p, so, v);
-	_scrollOffsets->addObject(obj);
-    this->cocos2d::CCNode::addChild(node, z);
+	ParallaxScrollOffset *obj = ParallaxScrollOffset::scrollWithNode(node, r, p, so, v);
+	//->addObject(obj);
+	this->_scrollOffsets.pushBack(obj);
+	this->cocos2d::Node::addChild(node, z);
 }
 
-void CCParallaxScrollNode::addChild(CCSprite *node, int z, CCPoint r, CCPoint p, CCPoint so){
-	this->addChild(node,z,r,p,so,ccp(0,0));
+void ParallaxScrollNode::addChild(Sprite *node, int z, Point r, Point p, Point so){
+	this->addChild(node,z,r,p,so,Point(0,0));
 }
 
-void CCParallaxScrollNode::removeChild(CCSprite *node, bool cleanup)
+void ParallaxScrollNode::removeChild(Sprite *node, bool cleanup)
 {
-    CCArray *dealloc = new CCArray();
-    dealloc->autorelease();
+    //Array *dealloc = new Array;
+    //dealloc->autorelease();
+	Vector<ParallaxScrollOffset*> dealloc;
+	int i,idx;
+	i = idx = 0;
     
-    
-    CCObject* object;
-    CCARRAY_FOREACH(_scrollOffsets, object)
+	for(auto obj: this->_scrollOffsets)
     {
-        CCParallaxScrollOffset* scrollOffset = dynamic_cast<CCParallaxScrollOffset*>(object); 
+        ParallaxScrollOffset *scrollOffset = (ParallaxScrollOffset*) obj;
 		if( scrollOffset->getTheChild() == node){
-			dealloc->addObject(scrollOffset);
+			//dealloc->addObject(scrollOffset);
+			dealloc.pushBack(scrollOffset);
 			break;
 		}
+		i++;
 	}
-    _scrollOffsets->removeObjectsInArray(dealloc);
+
+	for (auto _dealloc : dealloc)
+	{
+		_scrollOffsets.eraseObject(_dealloc, true);
+	}
+    //_scrollOffsets.erase(_scrollOffsets.begin()+idx);
 }
 
-void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel, CCPoint padding)
+void ParallaxScrollNode::addInfiniteScrollWithObjects(Vector<Sprite*> objects, int z, Point ratio, Point pos, Point dir, Point relVel, Point padding)
 {
 	// NOTE: corrects for 1 pixel at end of each sprite to avoid thin lines appearing
 	
@@ -119,71 +128,60 @@ void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCArray *objects, int z,
 	float totalWidth = 0;
 	float totalHeight = 0;
     
-    
-    CCObject* object;
-    CCARRAY_FOREACH(objects, object)
+	for(auto obj: objects)
     {
-        CCSprite* sprite = dynamic_cast<CCSprite*>(object);
-		totalWidth += sprite->getContentSize().width + dir.x * padding.x;
-		totalHeight += sprite->getContentSize().height + dir.y * padding.y;
+        Sprite *object = (Sprite*) obj;
+		totalWidth += object->getContentSize().width + dir.x * padding.x;
+		totalHeight += object->getContentSize().height + dir.y * padding.y;
 	}
     
 	// Position objects, add to parallax
-	CCPoint currPos = pos;
-    CCARRAY_FOREACH(objects, object)
+	Point currPos = pos;
+    for(auto obj: objects)
     {
-        CCSprite* sprite = dynamic_cast<CCSprite*>(object);
-		this->addChild(sprite, z, ratio, currPos, ccp(totalWidth, totalHeight), relVel);
-		CCPoint nextPosOffset = ccp(dir.x * (sprite->getContentSize().width + padding.x), dir.y * (sprite->getContentSize().height + padding.y));
-		currPos = ccpAdd(currPos, nextPosOffset);
+        Sprite *object = (Sprite*) obj;
+		this->addChild(object, z, ratio, currPos, Point(totalWidth, totalHeight), relVel);
+		Point nextPosOffset = Point(dir.x * (object->getContentSize().width + padding.x), dir.y * (object->getContentSize().height + padding.y));
+		currPos = (currPos + nextPosOffset);
 	}
 }
 
-void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCPoint relVel)
+void ParallaxScrollNode::addInfiniteScrollWithObjects(Vector<Sprite*> objects, int z, Point ratio, Point pos, Point dir, Point relVel)
 {
-	this->addInfiniteScrollWithObjects(objects, z, ratio, pos, dir, relVel, ccp(-1,-1));
+	this->addInfiniteScrollWithObjects(objects, z, ratio, pos, dir, relVel, Point(-1,-1));
 }
 
-void CCParallaxScrollNode::addInfiniteScrollWithObjects(CCArray *objects, int z, CCPoint ratio, CCPoint pos, CCPoint dir)
+void ParallaxScrollNode::addInfiniteScrollWithObjects(Vector<Sprite*> objects, int z, Point ratio, Point pos, Point dir)
 {
-	this->addInfiniteScrollWithObjects(objects, z, ratio, pos, dir, ccp(0,0));
+	this->addInfiniteScrollWithObjects(objects, z, ratio, pos, dir, Point(0,0));
 }
 
-void CCParallaxScrollNode::addInfiniteScrollXWithZ(int z, CCPoint ratio, CCPoint pos, CCSprite* firstObject, ...){
+void ParallaxScrollNode::addInfiniteScrollXWithZ(int z, Point ratio, Point pos, Sprite* firstObject, ...){
 	va_list args;
     va_start(args, firstObject);
 	
-	CCArray* argArray = new CCArray();
-	for (CCSprite *arg = firstObject; arg != NULL; arg = va_arg(args, CCSprite*)) {
-		argArray->addObject(arg);
+	//Array *argArray = new Array;
+	Vector<Sprite*> arguArray;
+	for (Sprite *arg = firstObject; arg != NULL; arg = va_arg(args, Sprite*)) {
+		//argArray->addObject(arg);
+		arguArray.pushBack(arg);
 	}
 	va_end(args);
 	
-	this->addInfiniteScrollWithObjects(argArray, z, ratio, pos, ccp(1,0));
+	this->addInfiniteScrollWithObjects(arguArray, z, ratio, pos, Point(1,0));
 }
 
-void CCParallaxScrollNode::addInfiniteScrollYWithZ(int z, CCPoint ratio, CCPoint pos, CCSprite* firstObject, ...){
+void ParallaxScrollNode::addInfiniteScrollYWithZ(int z, Point ratio, Point pos, Sprite* firstObject, ...){
 	va_list args;
     va_start(args, firstObject);
 	
-	CCArray* argArray = new CCArray();
-	for (CCSprite *arg = firstObject; arg != NULL; arg = va_arg(args, CCSprite*)) {
-		argArray->addObject(arg);
+	//Array *argArray = new Array;
+	Vector<Sprite*> arguArray;
+	for (Sprite *arg = firstObject; arg != NULL; arg = va_arg(args, Sprite*)) {
+		//argArray->addObject(arg);
+		arguArray.pushBack(arg);
 	}
 	va_end(args);
 	
-	this->addInfiniteScrollWithObjects(argArray, z, ratio, pos, ccp(0,1));
-}
-
-void CCParallaxScrollNode::addInfiniteScrollWithZ(int z, CCPoint ratio, CCPoint pos, CCPoint dir, CCSprite* firstObject, ...){
-	va_list args;
-    va_start(args, firstObject);
-	
-	CCArray* argArray = new CCArray();
-	for (CCSprite *arg = firstObject; arg != NULL; arg = va_arg(args, CCSprite*)) {
-		argArray->addObject(arg);
-	}
-	va_end(args);
-	
-	this->addInfiniteScrollWithObjects(argArray, z, ratio, pos, dir);
+	this->addInfiniteScrollWithObjects(arguArray, z, ratio, pos, Point(0,1));
 }

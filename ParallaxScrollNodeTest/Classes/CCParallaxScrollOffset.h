@@ -1,35 +1,36 @@
-//
-//  CCParallaxScrollOffset.h
-//  ParallaxScrollNodeTest
-//
-//  Created by Jason Marziani on 3/26/12.
-//  Copyright (c) 2012 Little Wins LLC. All rights reserved.
-//
+///
+///  CCParallaxScrollOffset.h
+///  ParallaxScrollNodeTest
+///
+///  Created by Jason Marziani on 3/26/12.
+///  Copyright (c) 2012 Little Wins LLC. All rights reserved.
+///
+///  Modification for Cocos2d-x 3.0 by Oscar Kurniawan @oscarkm
 
-#ifndef ParallaxScrollNodeTest_CCParallaxScrollOffset_h
-#define ParallaxScrollNodeTest_CCParallaxScrollOffset_h
+#pragma once
 
 #include "cocos2d.h"
 using namespace cocos2d;
 
-class CCParallaxScrollOffset : public cocos2d::CCLayer
+
+class ParallaxScrollOffset :
+    public cocos2d::Layer
 {
 public:
-	virtual bool init();  
-    
-    CC_SYNTHESIZE(CCPoint, scrollOffset, ScrollOffset);
-    CC_SYNTHESIZE(CCPoint, origPosition, OrigPosition);
-    CC_SYNTHESIZE(CCPoint, relVelocity, RelVelocity);
-    CC_SYNTHESIZE(CCPoint, ratio, Ratio);
-    CC_SYNTHESIZE(CCPoint, buffer, Buffer);
-    CC_SYNTHESIZE(CCNode*, theChild, TheChild);
-    
-    static CCParallaxScrollOffset* scrollWithNode(CCNode *node, CCPoint r, CCPoint p, CCPoint s);
-    static CCParallaxScrollOffset* scrollWithNode(CCNode *node, CCPoint r, CCPoint p, CCPoint s, CCPoint v);
-    CCParallaxScrollOffset* initWithNode(CCNode *node, CCPoint r, CCPoint p, CCPoint s, CCPoint v);
-    CCParallaxScrollOffset* initWithNode(CCNode *node, CCPoint r, CCPoint p, CCPoint s);
+    virtual bool init();  
+    CREATE_FUNC(ParallaxScrollOffset);
+    //
 
-    CREATE_FUNC(CCParallaxScrollOffset);
+    CC_SYNTHESIZE(Point, scrollOffset, ScrollOffset);
+    CC_SYNTHESIZE(Point, origPosition, OrigPosition);
+    CC_SYNTHESIZE(Point, relVelocity, RelVelocity);
+    CC_SYNTHESIZE(Point, ratio, Ratio);
+    CC_SYNTHESIZE(Point, buffer, Buffer);
+    CC_SYNTHESIZE(Node*, theChild, TheChild);
+    
+    static ParallaxScrollOffset* scrollWithNode(Node *node, Point r, Point p, Point s);
+    static ParallaxScrollOffset* scrollWithNode(Node *node, Point r, Point p, Point s, Point v);
+    ParallaxScrollOffset* initWithNode(Node *node, Point r, Point p, Point s, Point v);
+    ParallaxScrollOffset* initWithNode(Node *node, Point r, Point p, Point s);
 };
 
-#endif
